@@ -144,9 +144,15 @@ FFTW_CDECL X(execute)(const X(plan) p);                                 \
 FFTW_EXTERN X(plan)                                                     \
 FFTW_CDECL X(plan_dft)(int rank, const int *n,                          \
                        C *in, C *out, int sign, unsigned flags);        \
-                                                                        \
+FFTW_EXTERN X(plan)                                                     \
+FFTW_CDECL X(plan_dft_nosearch_generic)(int rank, const int *n,                          \
+                       C *in, C *out, int sign, unsigned flags);        \
+                                                                       \
 FFTW_EXTERN X(plan)                                                     \
 FFTW_CDECL X(plan_dft_1d)(int n, C *in, C *out, int sign,               \
+                          unsigned flags);                              \
+FFTW_EXTERN X(plan)                                                     \
+FFTW_CDECL X(plan_dft_1d_nosearch_generic)(int n, C *in, C *out, int sign,               \
                           unsigned flags);                              \
 FFTW_EXTERN X(plan)                                                     \
 FFTW_CDECL X(plan_dft_2d)(int n0, int n1,                               \
@@ -164,6 +170,14 @@ FFTW_CDECL X(plan_many_dft)(int rank, const int *n,                     \
                             int ostride, int odist,                     \
                             int sign, unsigned flags);                  \
                                                                         \
+FFTW_EXTERN X(plan)                                                     \
+FFTW_CDECL X(plan_many_dft_nosearch_generic)(int rank, const int *n,                     \
+                            int howmany,                                \
+                            C *in, const int *inembed,                  \
+                            int istride, int idist,                     \
+                            C *out, const int *onembed,                 \
+                            int ostride, int odist,                     \
+                            int sign, unsigned flags);                  \
 FFTW_EXTERN X(plan)                                                     \
 FFTW_CDECL X(plan_guru_dft)(int rank, const X(iodim) *dims,             \
                             int howmany_rank,                           \

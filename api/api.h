@@ -98,11 +98,13 @@ printer *X(mkprinter_cnt)(size_t *cnt);
 printer *X(mkprinter_str)(char *s);
 
 FFTW_EXTERN planner *X(the_planner)(void);
+FFTW_EXTERN planner *X(the_planner_nosearch_generic)(void);
 void X(configure_planner)(planner *plnr);
 
 void X(mapflags)(planner *, unsigned);
 
 apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb);
+apiplan *X(mkapiplan_nosearch_generic)(int sign, unsigned flags, problem *prb);
 
 rdft_kind *X(map_r2r_kind)(int rank, const X(r2r_kind) * kind);
 

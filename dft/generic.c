@@ -18,6 +18,7 @@
  *
  */
 
+#include <stdio.h>
 #include "dft/dft.h"
 
 typedef struct {
@@ -119,14 +120,15 @@ static int applicable(const solver *ego, const problem *p_,
 	     && p->sz->rnk == 1
 	     && p->vecsz->rnk == 0
 	     && (p->sz->dims[0].n % 2) == 1 
-	     && CIMPLIES(NO_LARGE_GENERICP(plnr), p->sz->dims[0].n < GENERIC_MIN_BAD)
-	     && CIMPLIES(NO_SLOWP(plnr), p->sz->dims[0].n > GENERIC_MAX_SLOW)
+	     //&& CIMPLIES(NO_LARGE_GENERICP(plnr), p->sz->dims[0].n < GENERIC_MIN_BAD)
+	     //&& CIMPLIES(NO_SLOWP(plnr), p->sz->dims[0].n > GENERIC_MAX_SLOW)
 	     && X(is_prime)(p->sz->dims[0].n)
 	  );
 }
 
 static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
 {
+     printf("[dft/generic-mkplan] Begin\n");
      const problem_dft *p;
      P *pln;
      INT n;
@@ -135,8 +137,10 @@ static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
 	  X(dft_solve), awake, print, X(plan_null_destroy)
      };
 
-     if (!applicable(ego, p_, plnr))
+     if (!applicable(ego, p_, plnr)) {
+          printf("[dft/generic-mkplan] not applicable\n");
           return (plan *)0;
+     }
 
      pln = MKPLAN_DFT(P, &padt, apply);
 
@@ -153,6 +157,7 @@ static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
      pln->super.super.ops.other = (n-1)*(4 + 1 + 2 * (n-1));  /* approximate */
 #endif
 
+     printf("[dft/generic-mkplan] End\n");
      return &(pln->super.super);
 }
 

@@ -761,6 +761,7 @@ struct planner_s {
 };
 
 planner *X(mkplanner)(void);
+planner *X(mkplanner_nosearch_generic)(void);
 void X(planner_destroy)(planner *ego);
 
 /*

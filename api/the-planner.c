@@ -33,6 +33,16 @@ planner *X(the_planner)(void)
      return plnr;
 }
 
+planner *X(the_planner_nosearch_generic)(void)
+{
+     if (!plnr) {
+          plnr = X(mkplanner_nosearch_generic)();
+          X(configure_planner)(plnr);
+     }
+
+     return plnr;
+}
+
 void X(cleanup)(void)
 {
      if (plnr) {

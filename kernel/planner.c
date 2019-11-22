@@ -18,6 +18,7 @@
  *
  */
 
+#include <stdio.h>
 #include "kernel/ifftw.h"
 #include <string.h>
 
@@ -903,6 +904,36 @@ static int imprt(planner *ego, scanner *sc)
      X(ifree0)(ht->solutions);
      *ht = old;
      return 0;
+}
+
+
+static plan *mkplan_nosearch(planner *ego, const problem *p)
+{
+      flags_t flagsp = ego->flags;
+      unsigned slvndx;
+      char buf[MAXNAM + 1] = "fftw_dft_generic_register";
+      int reg_id = 0;
+      slvndx = slookup(ego, buf, reg_id);
+      slvdesc *sp = ego->slvdescs + slvndx;
+      solver *s = sp->slv;
+      printf(">>[kernel/planner][search0] solver %s %d\n", sp->reg_nam, sp->reg_id);
+      plan *pln;
+      pln = invoke_solver(ego, p, s, &flagsp);
+      if(!pln) {
+              printf("[kernel/planner][mkplan_nosearch] Plan is null!!\n");
+      }
+      return pln;
+}
+
+planner *X(mkplanner_nosearch_generic)(void)
+{
+	static const planner_adt padt_local = {
+		register_solver, mkplan_nosearch, forget, exprt, imprt
+	};
+
+	planner *p = X(mkplanner)();
+	p->adt = &padt_local;
+      return p;
 }
 
 /*
