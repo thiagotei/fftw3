@@ -29,6 +29,7 @@
 #include <stdarg.h>		/* va_list */
 #include <stddef.h>             /* ptrdiff_t */
 #include <limits.h>             /* INT_MAX */
+#include <stdio.h>
 
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -429,6 +430,7 @@ typedef struct {
 
 typedef enum { INPLACE_IS, INPLACE_OS } inplace_kind;
 
+
 tensor *X(mktensor)(int rnk);
 tensor *X(mktensor_0d)(void);
 tensor *X(mktensor_1d)(INT n, INT is, INT os);
@@ -762,6 +764,7 @@ struct planner_s {
 
 planner *X(mkplanner)(void);
 planner *X(mkplanner_nosearch_generic)(void);
+solver *X(findSolver)(planner *ego, char * name, const int reg_id);
 void X(planner_destroy)(planner *ego);
 
 /*

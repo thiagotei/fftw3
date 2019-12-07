@@ -142,6 +142,72 @@ static int applicable(const solver *ego_, const problem *p_,
      return 1;
 }
 
+vrankinfo *X(alloc_vrank_info)(void) {
+    vrankinfo * vrinf = (vrankinfo *) malloc(sizeof(vrankinfo));
+    if(!vrinf){fprintf(stderr, "Could not allocate vrankinfo!\n") ; exit(1);}
+    return vrinf;
+}
+
+void X(destroy_vrank_info)(vrankinfo* vrinf)
+{
+    free(vrinf);
+}
+
+vrankinfo *X(mkplan_vrankgeq1_prol)(const solver *ego_, const problem *p_, planner *plnr)
+{
+     const problem_dft *p;
+     int vdim;
+     iodim *d;
+
+     if (!applicable(ego_, p_, plnr, &vdim))
+          return (vrankinfo *) 0;
+
+     p = (const problem_dft *) p_;
+
+     d = p->vecsz->dims + vdim;
+
+     A(d->n > 1);
+
+     //Allocate ctditinfo
+     vrankinfo *vrinf = X(alloc_vrank_info)();
+     vrinf->cld_prb = X(mkproblem_dft_d)(
+                        X(tensor_copy)(p->sz),
+                        X(tensor_copy_except)(p->vecsz, vdim),
+                        TAINT(p->ri, d->is), TAINT(p->ii, d->is),
+                        TAINT(p->ro, d->os), TAINT(p->io, d->os));
+     vrinf->d = d;
+     vrinf->p = p;
+
+    return (vrankinfo *) vrinf;
+}
+
+plan *X(mkplan_vrankgeq1_epil)(const solver *ego_, plan *cld, vrankinfo *info)
+{
+     const S *ego = (const S *) ego_;
+     P *pln;
+     static const plan_adt padt = {
+       X(dft_solve), awake, print, destroy
+     };
+
+     if (!cld) return (plan *) 0;
+     pln = MKPLAN_DFT(P, &padt, apply);
+
+     pln->cld = cld;
+     pln->vl = info->d->n;
+     pln->ivs = info->d->is;
+     pln->ovs = info->d->os;
+
+     pln->solver = ego;
+     X(ops_zero)(&pln->super.super.ops);
+     pln->super.super.ops.other = 3.14159; /* magic to prefer codelet loops */
+     X(ops_madd2)(pln->vl, &cld->ops, &pln->super.super.ops);
+
+     if (info->p->sz->rnk != 1 || (info->p->sz->dims[0].n > 64))
+        pln->super.super.pcost = pln->vl * cld->pcost;
+
+     return &(pln->super.super);
+}
+
 static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 {
      const S *ego = (const S *) ego_;

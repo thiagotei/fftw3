@@ -59,6 +59,19 @@ plan *X(mkplan_dft)(size_t size, const plan_adt *adt, dftapply apply);
 #define MKPLAN_DFT(type, adt, apply) \
   (type *)X(mkplan_dft)(sizeof(type), adt, apply)
 
+///// LOCUS new functions
+typedef struct {
+     const problem *cld_prb;
+     const problem_dft *p;
+     iodim *d;
+} vrankinfo;
+
+vrankinfo *X(alloc_vrank_info)(void);
+void       X(destroy_vrank_info)(vrankinfo* vrinf);
+vrankinfo *X(mkplan_vrankgeq1_prol)(const solver *ego_, const problem *p_, planner *plnr);
+plan      *X(mkplan_vrankgeq1_epil)(const solver *ego_, plan *cld, vrankinfo *info);
+/////
+
 /* various solvers */
 solver *X(mksolver_dft_direct)(kdft k, const kdft_desc *desc);
 solver *X(mksolver_dft_directbuf)(kdft k, const kdft_desc *desc);

@@ -52,6 +52,20 @@ struct ct_solver_s {
      ct_force_vrecursion force_vrecursionp;
 };
 
+///// LOCUS new functions
+typedef struct {
+     const problem_dft *p;
+     //`:const problem *p;
+     INT n, r, m, v, ivs, ovs;
+     iodim *d;
+} ctditinfo;
+
+ctditinfo *X(alloc_ctdit_info)(void);
+void X(destroy_ctdit_info)(ctditinfo * cinf);
+ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *plnr);
+plan *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctditinfo *info);
+/////
+
 int X(ct_applicable)(const ct_solver *, const problem *, planner *);
 ct_solver *X(mksolver_ct)(size_t size, INT r, int dec, 
 			  ct_mkinferior mkcldw, 

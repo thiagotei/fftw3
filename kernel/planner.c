@@ -18,8 +18,8 @@
  *
  */
 
-#include <stdio.h>
 #include "kernel/ifftw.h"
+#include "dft/ct.h"
 #include <string.h>
 
 /* GNU Coding Standards, Sec. 5.2: "Please write the comments in a GNU
@@ -109,6 +109,7 @@ static void register_solver(planner *ego, solver *s)
 	  n->slv = s;
 	  n->reg_nam = ego->cur_reg_nam;
 	  n->reg_id = ego->cur_reg_id++;
+      //fprintf(stdout, "[kernel/planner/register_solver] %s %d\n", n->reg_nam, n->reg_id);
 	  
 	  A(strlen(n->reg_nam) < MAXNAM);
 	  n->nam_hash = X(hash)(n->reg_nam);
@@ -906,23 +907,157 @@ static int imprt(planner *ego, scanner *sc)
      return 0;
 }
 
+solver *X(findSolver)(planner *ego, char * name, const int reg_id)
+{
+     unsigned slvndx = slookup(ego, name, reg_id);
+     slvdesc *sp = ego->slvdescs + slvndx;
+     solver *s = sp->slv;
+
+     return s;
+}
 
 static plan *mkplan_nosearch(planner *ego, const problem *p)
 {
       flags_t flagsp = ego->flags;
+      plan *pln;
+//#ifdef
+     char buf[MAXNAM + 1] = "fftw_codelet_n2fv_16_avx";
+     solver * s = X(findSolver)(ego, buf, 0);
+/*     int reg_id = 0;
+     unsigned slvndx = slookup(ego, buf, reg_id);
+     slvdesc *sp = ego->slvdescs + slvndx;
+     solver *s = sp->slv;
+*/
+     char bufW[MAXNAM + 1] = "fftw_codelet_t3fv_16_avx";
+     solver *sW = X(findSolver)(ego, bufW, 0);
+/*     unsigned slvndxW = slookup(ego, bufW, reg_id);
+     slvdesc *spW = ego->slvdescs + slvndxW;
+     solver *sW = spW->slv;
+*/     const ct_solver *sWct = (const ct_solver *) sW;
+
+
+     ctditinfo * ctinf = X(mkplan_ctdit_prol)(sW, p, ego);
+     plan *cld = 0, *cldw = 0;
+
+     cldw = sWct->mkcldw(sWct,
+             ctinf->r, ctinf->m * ctinf->d[0].os, ctinf->m * ctinf->d[0].os,
+             ctinf->m, ctinf->d[0].os,
+             ctinf->v, ctinf->ovs, ctinf->ovs,
+             0, ctinf->m,
+             ctinf->p->ro, ctinf->p->io, ego);
+
+     cld = invoke_solver(ego, X(mkproblem_dft_d)(
+				     X(mktensor_1d)(ctinf->m, ctinf->r * ctinf->d[0].is, ctinf->d[0].os),
+				     X(mktensor_2d)(ctinf->r, ctinf->d[0].is, ctinf->m * ctinf->d[0].os,
+						    ctinf->v, ctinf->ivs, ctinf->ovs),
+				     ctinf->p->ri, ctinf->p->ii, ctinf->p->ro, ctinf->p->io), s, &flagsp);
+
+     pln = X(mkplan_ctdit_epil)(sW, cldw, cld, ctinf);
+     if(!pln) {
+          fprintf(stdout, "[kernel/planner][mkplan_nosearch] Plan is null!!\n");
+     } else {
+          fprintf(stdout, "[kernel/planner][mkplan_nosearch] Plan worked!!\n");
+     }
+     X(destroy_ctdit_info)(ctinf);
+
+     return pln;
+
+//#else
+//#ifdef 0
+#if 0
       unsigned slvndx;
-      char buf[MAXNAM + 1] = "fftw_dft_generic_register";
+      //char buf[MAXNAM + 1] = "fftw_dft_generic_register";
+      char buf[MAXNAM + 1] = "fftw_codelet_n1fv_8_avx";
       int reg_id = 0;
       slvndx = slookup(ego, buf, reg_id);
       slvdesc *sp = ego->slvdescs + slvndx;
       solver *s = sp->slv;
-      printf(">>[kernel/planner][search0] solver %s %d\n", sp->reg_nam, sp->reg_id);
-      plan *pln;
+      fprintf(stdout, ">>[kernel/planner][search0] solver %s %d\n", sp->reg_nam, sp->reg_id);
       pln = invoke_solver(ego, p, s, &flagsp);
       if(!pln) {
-              printf("[kernel/planner][mkplan_nosearch] Plan is null!!\n");
+              fprintf(stdout, "[kernel/planner][mkplan_nosearch] Plan is null!!\n");
       }
       return pln;
+//#elif 0
+     const ct_solver *ego = (const ct_solver *) ego_;
+     const problem_dft *p_;
+     P *pln = 0;
+     plan *cld = 0, *cldw = 0;
+     INT n, r, m, v, ivs, ovs;
+     iodim *d;
+
+     static const plan_adt padt = {
+       X(dft_solve), awake, print, destroy
+     };
+
+     if ((NO_NONTHREADEDP(plnr)) || !X(ct_applicable)(ego, p_, plnr))
+          return (plan *) 0;
+
+     p_ = (const problem_dft *) p;
+     d = p_->sz->dims;
+     n = d[0].n;
+     r = X(choose_radix)(ego->r, n);
+     m = n / r;
+
+     X(tensor_tornk1)(p_->vecsz, &v, &ivs, &ovs);
+
+     char buf[MAXNAM + 1] = "fftw_codelet_n2fv_8_avx";
+     int reg_id = 0;
+     unsigned slvndx = slookup(ego, buf, reg_id);
+     slvdesc *sp = ego->slvdescs + slvndx;
+     solver *s = sp->slv;
+
+     char bufW[MAXNAM + 1] = "fftw_codelet_t3fv_8_avx";
+     unsigned slvndxW = slookup(ego, bufW, reg_id);
+     slvdesc *spW = ego->slvdescs + slvndxW;
+     solver *sW = spW->slv;
+
+     if (ego->dec == DECDIT) {
+	      //cldw = ego->mkcldw(ego,
+	      cldw = sW->mkcldw(ego,
+				 r, m * d[0].os, m * d[0].os,
+				 m, d[0].os,
+				 v, ovs, ovs,
+				 0, m,
+				 p->ro, p->io, plnr);
+	      if (!cldw) goto nadaVIXE;
+
+/*	      cld = X(mkplan_d)(plnr,
+				X(mkproblem_dft_d)(
+				     X(mktensor_1d)(m, r * d[0].is, d[0].os),
+				     X(mktensor_2d)(r, d[0].is, m * d[0].os,
+						    v, ivs, ovs),
+				     p->ri, p->ii, p->ro, p->io)
+		   );
+*/
+          cld = invoke_solver(ego,X(mkproblem_dft_d)(
+				     X(mktensor_1d)(m, r * d[0].is, d[0].os),
+				     X(mktensor_2d)(r, d[0].is, m * d[0].os,
+						    v, ivs, ovs),
+				     p->ri, p->ii, p->ro, p->io), s, &flagsp);
+
+	      if (!cld) goto nadaVIXE;
+
+	      pln = MKPLAN_DFT(P, &padt, apply_dit);
+    } else {
+        return (plan *) 0;
+    }
+
+     pln->cld = cld;
+     pln->cldw = cldw;
+     pln->r = r;
+     X(ops_add)(&cld->ops, &cldw->ops, &pln->super.super.ops);
+
+     /* inherit could_prune_now_p attribute from cldw */
+     pln->super.super.could_prune_now_p = cldw->could_prune_now_p;
+     return &(pln->super.super);
+
+ nadaVIXE:
+     X(plan_destroy_internal)(cldw);
+     X(plan_destroy_internal)(cld);
+     return (plan *) 0;
+
+#endif
 }
 
 planner *X(mkplanner_nosearch_generic)(void)

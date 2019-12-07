@@ -91,9 +91,11 @@ static void apply_buf(const plan *ego_, R *ri, R *ii, R *ro, R *io)
 
 static void apply(const plan *ego_, R *ri, R *ii, R *ro, R *io)
 {
+     //fprintf(stdout, "[dft-direct/apply] Executing\n");
      const P *ego = (const P *) ego_;
      ASSERT_ALIGNED_DOUBLE;
      ego->k(ri, ii, ro, io, ego->is, ego->os, ego->vl, ego->ivs, ego->ovs);
+     //fprintf(stdout, "[dft-direct/apply] End\n");
 }
 
 static void apply_extra_iter(const plan *ego_, R *ri, R *ii, R *ro, R *io)

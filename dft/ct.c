@@ -115,6 +115,89 @@ int X(ct_applicable)(const ct_solver *ego, const problem *p_, planner *plnr)
 	  );
 }
 
+ctditinfo *X(alloc_ctdit_info)(void) {
+    ctditinfo * cinf = (ctditinfo *) malloc(sizeof(ctditinfo));
+    if(!cinf){fprintf(stderr, "Could not allocate ctditinfo!\n") ; exit(1);}
+    return cinf;
+}
+
+void X(destroy_ctdit_info)(ctditinfo * cinf)
+{
+    free(cinf);
+}
+
+ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *plnr)
+{
+     const ct_solver *ego = (const ct_solver *) ego_;
+     const problem_dft *p;
+     INT n, r, m, v, ivs, ovs;
+     iodim *d;
+
+     if ((NO_NONTHREADEDP(plnr)) || !X(ct_applicable)(ego, p_, plnr))
+          return (ctditinfo *) 0;
+
+     p = (const problem_dft *) p_;
+     d = p->sz->dims;
+     n = d[0].n;
+     r = X(choose_radix)(ego->r, n);
+     m = n / r;
+
+     X(tensor_tornk1)(p->vecsz, &v, &ivs, &ovs);
+
+    //Allocate ctditinfo
+    ctditinfo * cinf = X(alloc_ctdit_info)();
+    cinf->n = n;
+    cinf->r = r;
+    cinf->m = m;
+    cinf->v = v;
+    cinf->ivs = ivs;
+    cinf->ovs = ovs;
+    cinf->d = d;
+    cinf->p = p;
+
+     return (ctditinfo *) cinf;
+}
+
+plan *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctditinfo *info)
+{
+     const ct_solver *ego = (const ct_solver *) ego_;
+     plan *cld = 0, *cldw = 0;
+     P *pln = 0;
+
+     static const plan_adt padt = {
+        X(dft_solve), awake, print, destroy
+     };
+
+     switch (ego->dec) {
+	 case DECDIT:
+	 {
+	      cldw = inpcldw;
+          if (!cldw) goto nada2;
+
+	      cld = inpcld;
+	      if (!cld) goto nada2;
+
+	      pln = MKPLAN_DFT(P, &padt, apply_dit);
+	      break;
+	 }
+	 default: A(0);
+
+     }
+
+     pln->cld = cld;
+     pln->cldw = cldw;
+     pln->r = info->r;
+     X(ops_add)(&cld->ops, &cldw->ops, &pln->super.super.ops);
+
+     /* inherit could_prune_now_p attribute from cldw */
+     pln->super.super.could_prune_now_p = cldw->could_prune_now_p;
+     return &(pln->super.super);
+
+ nada2:
+     X(plan_destroy_internal)(cldw);
+     X(plan_destroy_internal)(cld);
+     return (plan *) 0;
+}
 
 static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 {

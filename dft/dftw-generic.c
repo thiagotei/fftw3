@@ -190,9 +190,11 @@ static plan *mkcldw(const ct_solver *ego_,
 static void regsolver(planner *plnr, INT r, int dec)
 {
      S *slv = (S *)X(mksolver_ct)(sizeof(S), r, dec, mkcldw, 0);
+     //fprintf(stdout, "[dft/dftw-generic/regsolver] Registering Solver\n");
      REGISTER_SOLVER(plnr, &(slv->super));
      if (X(mksolver_ct_hook)) {
 	  slv = (S *)X(mksolver_ct_hook)(sizeof(S), r, dec, mkcldw, 0);
+     //fprintf(stdout, "[dft/dftw-generic/regsolver] Registering Solver hook\n");
 	  REGISTER_SOLVER(plnr, &(slv->super));
      }
 }

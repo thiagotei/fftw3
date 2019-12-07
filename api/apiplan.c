@@ -83,6 +83,62 @@ static plan *mkplan(planner *plnr, unsigned flags,
      return pln;
 }
 
+
+planner *X(mkapiplan_locus_prol)(unsigned flags, problem *prb)
+{
+     //printf("[api/apiplan.c/mkapiplan_locus_prol] Begin\n");
+
+     planner *plnr;
+     plnr = X(the_planner)();
+
+     X(mapflags)(plnr, flags);
+
+     plnr->flags.hash_info = 0u; //hash_info;
+     plnr->wisdom_state = WISDOM_NORMAL;
+
+     //printf("[api/apiplan.c/mkapiplan_locus_prol] End\n");
+     return plnr;
+}
+
+apiplan *X(mkapiplan_locus_epil)(int sign, planner *plnr, plan *pln1, problem *prb)
+{
+     apiplan *p = 0;
+     //printf("[api/apiplan/mkapiplan_locus_epil] Begin\n");
+     if (pln1) {
+	  /* build apiplan */
+	  p = (apiplan *) MALLOC(sizeof(apiplan), PLANS);
+	  p->prb = prb;
+	  p->sign = sign; /* cache for execute_dft */
+
+	  /* re-create plan from wisdom, adding blessing */
+	  p->pln = pln1; //mkplan(plnr, flags_used_for_planning, prb, BLESSING);
+
+	  /* record pcost from most recent measurement for use in X(cost) */
+	  //p->pln->pcost = pcost;
+
+	  if (sizeof(trigreal) > sizeof(R)) {
+	       /* this is probably faster, and we have enough trigreal
+		  bits to maintain accuracy */
+	       X(plan_awake)(p->pln, AWAKE_SQRTN_TABLE);
+	  } else {
+	       /* more accurate */
+	       X(plan_awake)(p->pln, AWAKE_SINCOS);
+	  }
+
+	  /* we don't use pln for p->pln, above, since by re-creating the
+	     plan we might use more patient wisdom from a timed-out mkplan */
+	  //X(plan_destroy_internal)(pln1);
+     } else
+	  X(problem_destroy)(prb);
+
+     /* discard all information not necessary to reconstruct the plan */
+     plnr->adt->forget(plnr, FORGET_ACCURSED);
+
+     //printf("[api/apiplan/mkapiplan_locus_epil] End\n");
+
+     return p;
+}
+
 apiplan *X(mkapiplan_nosearch_generic)(int sign, unsigned flags, problem *prb)
 {
      printf("[api/apiplan-mkapiplan_nosearch_generic] Begin\n");

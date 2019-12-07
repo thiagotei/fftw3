@@ -18,7 +18,6 @@
  *
  */
 
-#include <stdio.h>
 #include "dft/dft.h"
 
 typedef struct {
@@ -128,7 +127,7 @@ static int applicable(const solver *ego, const problem *p_,
 
 static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
 {
-     printf("[dft/generic-mkplan] Begin\n");
+     //fprintf(stderr, "[dft/generic-mkplan] Begin\n");
      const problem_dft *p;
      P *pln;
      INT n;
@@ -138,7 +137,7 @@ static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
      };
 
      if (!applicable(ego, p_, plnr)) {
-          printf("[dft/generic-mkplan] not applicable\n");
+          //fprintf(stderr, "[dft/generic-mkplan] not applicable\n");
           return (plan *)0;
      }
 
@@ -157,7 +156,7 @@ static plan *mkplan(const solver *ego, const problem *p_, planner *plnr)
      pln->super.super.ops.other = (n-1)*(4 + 1 + 2 * (n-1));  /* approximate */
 #endif
 
-     printf("[dft/generic-mkplan] End\n");
+     //fprintf(stderr, "[dft/generic-mkplan] End\n");
      return &(pln->super.super);
 }
 

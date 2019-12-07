@@ -105,6 +105,8 @@ void X(mapflags)(planner *, unsigned);
 
 apiplan *X(mkapiplan)(int sign, unsigned flags, problem *prb);
 apiplan *X(mkapiplan_nosearch_generic)(int sign, unsigned flags, problem *prb);
+planner *X(mkapiplan_locus_prol)(unsigned flags, problem *prb);
+apiplan *X(mkapiplan_locus_epil)(int sign, planner *plnr, plan *pln1, problem *prb);
 
 rdft_kind *X(map_r2r_kind)(int rank, const X(r2r_kind) * kind);
 

@@ -45,6 +45,7 @@ typedef struct {
  *************************************************************/
 static void apply(const plan *ego_, R *rio, R *iio)
 {
+     //fprintf(stdout, "[dftW-direct/apply] Executing\n");
      const P *ego = (const P *) ego_;
      INT i;
      ASSERT_ALIGNED_DOUBLE;
@@ -53,6 +54,7 @@ static void apply(const plan *ego_, R *rio, R *iio)
 	  ego->k(rio + mb*ms, iio + mb*ms, ego->td->W, 
 		 ego->rs, mb, ego->me, ms);
      }
+     //fprintf(stdout, "[dftW-direct/apply] End\n");
 }
 
 static void apply_extra_iter(const plan *ego_, R *rio, R *iio)
@@ -313,6 +315,7 @@ static void regone(planner *plnr, kdftw codelet,
      slv->k = codelet;
      slv->desc = desc;
      slv->bufferedp = bufferedp;
+     //fprintf(stdout, "[dft/dftw-direct/regone] Registering Solver\n");
      REGISTER_SOLVER(plnr, &(slv->super.super));
      if (X(mksolver_ct_hook)) {
 	  slv = (S *)X(mksolver_ct_hook)(sizeof(S), desc->radix,
@@ -320,6 +323,7 @@ static void regone(planner *plnr, kdftw codelet,
 	  slv->k = codelet;
 	  slv->desc = desc;
 	  slv->bufferedp = bufferedp;
+     //fprintf(stdout, "[dft/dftw-direct/regone] Registering Solver hook\n");
 	  REGISTER_SOLVER(plnr, &(slv->super.super));
      }
 }
