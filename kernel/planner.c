@@ -122,7 +122,7 @@ static void register_solver(planner *ego, solver *s)
      }
 }
 
-static unsigned slookup(planner *ego, char *nam, int id)
+static unsigned slookup(planner *ego, const char *nam, int id)
 {
      unsigned h = X(hash)(nam); /* used to avoid strcmp in the common case */
      FORALL_SOLVERS(ego, s, sp, {
@@ -907,9 +907,10 @@ static int imprt(planner *ego, scanner *sc)
      return 0;
 }
 
-solver *X(findSolver)(planner *ego, char * name, const int reg_id)
+solver *X(findSolver)(planner *ego, const char *name, const int reg_id)
 {
      unsigned slvndx = slookup(ego, name, reg_id);
+     if (slvndx == INFEASIBLE_SLVNDX) { return (solver *) 0;}
      slvdesc *sp = ego->slvdescs + slvndx;
      solver *s = sp->slv;
 

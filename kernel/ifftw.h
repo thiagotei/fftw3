@@ -764,7 +764,7 @@ struct planner_s {
 
 planner *X(mkplanner)(void);
 planner *X(mkplanner_nosearch_generic)(void);
-solver *X(findSolver)(planner *ego, char * name, const int reg_id);
+solver *X(findSolver)(planner *ego, const char *name, const int reg_id);
 void X(planner_destroy)(planner *ego);
 
 /*

@@ -154,6 +154,11 @@ ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *
     cinf->ovs = ovs;
     cinf->d = d;
     cinf->p = p;
+    cinf->cld_prb = X(mkproblem_dft_d)(
+                         X(mktensor_1d)(m, r * d[0].is, d[0].os),
+                         X(mktensor_2d)(r, d[0].is, m * d[0].os,
+                                        v, ivs, ovs),
+                         p->ri, p->ii, p->ro, p->io);
 
      return (ctditinfo *) cinf;
 }

@@ -53,9 +53,14 @@ struct ct_solver_s {
 };
 
 ///// LOCUS new functions
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
 typedef struct {
      const problem_dft *p;
-     //`:const problem *p;
+     const problem *cld_prb;
      INT n, r, m, v, ivs, ovs;
      iodim *d;
 } ctditinfo;
@@ -64,6 +69,10 @@ ctditinfo *X(alloc_ctdit_info)(void);
 void X(destroy_ctdit_info)(ctditinfo * cinf);
 ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *plnr);
 plan *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctditinfo *info);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif /* __cplusplus */
 /////
 
 int X(ct_applicable)(const ct_solver *, const problem *, planner *);
