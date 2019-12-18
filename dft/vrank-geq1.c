@@ -164,6 +164,7 @@ vrankinfo *X(mkplan_vrankgeq1_prol)(const solver *ego_, const problem *p_, plann
 
      p = (const problem_dft *) p_;
 
+     fprintf(stderr, "[fftw][dft/vrank/mkplan_vrankgeq1_epil] sz->rnk= %d vecsz->rnk= %d ? %d sz->dims[0].n= %ld\n", p->sz->rnk == 1, p->vecsz->rnk,p->vecsz->rnk <= 1, p->sz->dims[0].n);
      d = p->vecsz->dims + vdim;
 
      A(d->n > 1);
@@ -225,6 +226,8 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
           return (plan *) 0;
      p = (const problem_dft *) p_;
 
+     //fprintf(stderr, "[fftw][dft/vrank/mkplan] vecsz->rnk= %d ? %d sz->dims[0].n= %d\n", p->sz->rnk == 1, p->vecsz->rnk,p->vecsz->rnk <= 1, p->sz->dims[0].n == d->sz);
+     fprintf(stderr, "[fftw][dft/vrank/mkplan] sz->rnk= %d vecsz->rnk= %d ? %d sz->dims[0].n= %ld\n", p->sz->rnk == 1, p->vecsz->rnk,p->vecsz->rnk <= 1, p->sz->dims[0].n);
      d = p->vecsz->dims + vdim;
 
      A(d->n > 1);

@@ -191,6 +191,7 @@ static int applicable(const solver *ego_, const problem *p_,
      INT vl;
      INT ivs, ovs;
 
+     fprintf(stderr, "[fftw][dft/direct/applicable] sz->rnk= %d vecsz->rnk= %d sz->dims[0].n= %ld ? %ld\n", p->sz->rnk, p->vecsz->rnk, p->sz->dims[0].n, d->sz);
      return (
 	  1
 	  && p->sz->rnk == 1
@@ -249,7 +250,10 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      } else {
 	  int extra_iterp = 0;
 	  if (!applicable(ego_, p_, plnr, &extra_iterp))
+      {
+           fprintf(stderr, "[fftw][dft/direct/mkplan] NOT applicable!\n");
 	       return (plan *)0;
+      }
 	  pln = MKPLAN_DFT(P, &padt, extra_iterp ? apply_extra_iter : apply);
      }
 

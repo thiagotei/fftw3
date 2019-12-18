@@ -103,7 +103,10 @@ int X(ct_applicable)(const ct_solver *ego, const problem *p_, planner *plnr)
      const problem_dft *p;
 
      if (!applicable0(ego, p_, plnr))
+     {
+          fprintf(stderr, "[fftw][dft/ct/ct_applicable] not applicable0!\n");
           return 0;
+     }
 
      p = (const problem_dft *) p_;
 
@@ -134,13 +137,17 @@ ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *
      iodim *d;
 
      if ((NO_NONTHREADEDP(plnr)) || !X(ct_applicable)(ego, p_, plnr))
+     {
+          fprintf(stderr, "[fftw][dft/ct/mkplan_ctdit_prol] not ct_applicable!\n");
           return (ctditinfo *) 0;
+     }
 
      p = (const problem_dft *) p_;
      d = p->sz->dims;
      n = d[0].n;
      r = X(choose_radix)(ego->r, n);
      m = n / r;
+     fprintf(stderr, "[mkplan_ctdit_prol] r= %ld m= %ld n= %ld p->vecsz->rnk= %d\n", r, m, n, p->vecsz->rnk);
 
      X(tensor_tornk1)(p->vecsz, &v, &ivs, &ovs);
 
@@ -218,13 +225,17 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      };
 
      if ((NO_NONTHREADEDP(plnr)) || !X(ct_applicable)(ego, p_, plnr))
+     {
+          fprintf(stderr, "[fftw][dft/ct/mkplan] not ct_applicable!\n");
           return (plan *) 0;
+     }
 
      p = (const problem_dft *) p_;
      d = p->sz->dims;
      n = d[0].n;
      r = X(choose_radix)(ego->r, n);
      m = n / r;
+     fprintf(stderr, "[mkplan_ct] r= %ld m= %ld n= %ld p->vecsz->rnk= %d\n", r, m, n, p->vecsz->rnk);
 
      X(tensor_tornk1)(p->vecsz, &v, &ivs, &ovs);
 
@@ -314,6 +325,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
      return &(pln->super.super);
 
  nada:
+     fprintf(stderr,"[fftw][dft/ct/mkplan] goto nada!\n");
      X(plan_destroy_internal)(cldw);
      X(plan_destroy_internal)(cld);
      return (plan *) 0;
