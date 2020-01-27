@@ -144,6 +144,92 @@ static void print(const plan *ego_, printer *p)
 	      ego->batchsz, ego->r, ego->m, ego->cld);
 }
 
+wgenbufinfo *X(alloc_wgenbuf_info)(void)
+{
+    wgenbufinfo * wgbinf = (wgenbufinfo *) malloc(sizeof(wgenbufinfo));
+    if(!wgbinf){fprintf(stderr, "Could not allocate wgenbufinfo!\n") ; exit(1);}
+    return wgbinf;
+}
+
+void X(destroy_wgenbuf_info)(wgenbufinfo *wgbinf)
+{
+    free(wgbinf);
+}
+
+wgenbufinfo *X(mkcldw_wgenbuf_prol)(const ct_solver *ego_,
+        INT r, INT irs, INT ors,
+        INT m, INT ms,
+        INT v, INT ivs, INT ovs,
+        INT mstart, INT mcount,
+        R *rio, R *iio,
+        planner *plnr)
+{
+     const S *ego = (const S *)ego_;
+     R *buf;
+
+     UNUSED(ivs); UNUSED(ovs); UNUSED(rio); UNUSED(iio);
+
+     A(mstart >= 0 && mstart + mcount <= m);
+     if (!applicable(ego, r, irs, ors, m, v, mcount, plnr))
+          return (wgenbufinfo *)0;
+
+     wgenbufinfo *wgbinf = X(alloc_wgenbuf_info)();
+     buf = (R *) MALLOC(sizeof(R) * 2 * BATCHDIST(r) * ego->batchsz, BUFFERS);
+     wgbinf->cld_prb = X(mkproblem_dft_d)(
+                            X(mktensor_1d)(r, 2, 2),
+                            X(mktensor_1d)(ego->batchsz,
+                            2 * BATCHDIST(r),
+                            2 * BATCHDIST(r)),
+                            buf, buf + 1, buf, buf + 1);
+     wgbinf->buf = buf;
+     wgbinf->r = r;
+     wgbinf->m = m;
+     wgbinf->ms = ms;
+     wgbinf->rs = irs;
+     wgbinf->mcount = mcount;
+     wgbinf->mb = mstart;
+     wgbinf->me = mstart + mcount;
+
+    return (wgenbufinfo *) wgbinf;
+}
+
+plan *X(mkcldw_wgenbuf_epil)(const solver *ego_, plan *cld, wgenbufinfo *wgbinf)
+{
+     const S *ego = (const S *)ego_;
+     P *pln;
+
+     static const plan_adt padt = {
+        0, awake, print, destroy
+     };
+
+     X(ifree)(wgbinf->buf);
+     if (!cld) goto nada;
+
+     pln = MKPLAN_DFTW(P, &padt, apply);
+     pln->slv = ego;
+     pln->cld = cld;
+     pln->r =  wgbinf->r;
+     pln->m = wgbinf->m;
+     pln->ms = wgbinf->ms;
+     pln->rs = wgbinf->rs;
+     pln->batchsz = ego->batchsz;
+     pln->mb = wgbinf->mb;
+     pln->me = wgbinf->me;
+
+     {
+	  double n0 = (wgbinf->r - 1) * (wgbinf->mcount - 1);
+	  pln->super.super.ops = cld->ops;
+	  pln->super.super.ops.mul += 8 * n0;
+	  pln->super.super.ops.add += 4 * n0;
+	  pln->super.super.ops.other += 8 * n0;
+     }
+     return &(pln->super.super);
+
+ nada:
+     X(plan_destroy_internal)(cld);
+     return (plan *) 0;
+}
+
 static plan *mkcldw(const ct_solver *ego_,
 		    INT r, INT irs, INT ors,
 		    INT m, INT ms,

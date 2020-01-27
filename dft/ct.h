@@ -58,6 +58,7 @@ extern "C"
 {
 #endif /* __cplusplus */
 
+///// LOCUS new functions
 typedef struct {
      const problem_dft *p;
      const problem *cld_prb;
@@ -66,9 +67,27 @@ typedef struct {
 } ctditinfo;
 
 ctditinfo *X(alloc_ctdit_info)(void);
-void X(destroy_ctdit_info)(ctditinfo * cinf);
+void       X(destroy_ctdit_info)(ctditinfo * cinf);
 ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *plnr);
-plan *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctditinfo *info);
+plan      *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctditinfo *info);
+
+typedef struct {
+     const problem *cld_prb;
+     R * buf;
+     INT r, rs, m, ms, mcount, mb, me;
+} wgenbufinfo;
+
+wgenbufinfo *X(alloc_wgenbuf_info)(void);
+void         X(destroy_wgenbuf_info)(wgenbufinfo * wgbinf);
+wgenbufinfo *X(mkcldw_wgenbuf_prol)(const ct_solver *ego_,
+                    INT r, INT irs, INT ors,
+                    INT m, INT ms,
+                    INT v, INT ivs, INT ovs,
+                    INT mstart, INT mcount,
+                    R *rio, R *iio,
+                    planner *plnr);
+plan        *X(mkcldw_wgenbuf_epil)(const solver *ego_, plan *cld, wgenbufinfo *wgbinf);
+/////
 
 #ifdef __cplusplus
 }  /* extern "C" */

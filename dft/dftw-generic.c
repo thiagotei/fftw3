@@ -78,6 +78,7 @@ static void bytwiddle(const P *ego, R *rio, R *iio)
 static int applicable(INT irs, INT ors, INT ivs, INT ovs,
 		      const planner *plnr)
 {
+     fprintf(stderr, "[fftw][dftw-generic/applicable] not applicable!\n");
      return (1
 	     && irs == ors
 	     && ivs == ovs
@@ -184,6 +185,7 @@ static plan *mkcldw(const ct_solver *ego_,
 
  nada:
      X(plan_destroy_internal)(cld);
+     fprintf(stderr, "[fftw][dftw-generic/mkcldw] reached nada!!!!\n");
      return (plan *) 0;
 }
 

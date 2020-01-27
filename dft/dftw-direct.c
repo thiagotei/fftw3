@@ -164,6 +164,14 @@ static int applicable0(const S *ego,
 {
      const ct_desc *e = ego->desc;
      UNUSED(v);
+     int tmp0 = e->genus->okp(e, rio, iio, irs, ivs, m, mb, me, ms, plnr);
+
+     int tmp1 = e->genus->okp(e, rio, iio, irs, ivs,
+				 m, mb, me - 1, ms, plnr);
+     int tmp2 = e->genus->okp(e, rio, iio, irs, ivs,
+				 m, me - 1, me + 1, ms, plnr);
+
+     fprintf(stderr, "[fftw][dftw-direct/applicable0] applicable0!!!! %d %d %d\n", tmp0, tmp1, tmp2);
 
      return (
 	  1
@@ -238,8 +246,10 @@ static int applicable(const S *ego,
      } else {
 	  if (!applicable0(ego,
 			   r, irs, ors, m, ms, v, ivs, ovs, mb, me,
-			   rio, iio, plnr, extra_iter))
+			   rio, iio, plnr, extra_iter)) {
+           fprintf(stderr, "[fftw][dftw-direct/applicable] not applicable0!!!!\n");
 	       return 0;
+      }
      }
 
      if (NO_UGLYP(plnr) && X(ct_uglyp)((ego->bufferedp? (INT)512 : (INT)16),
@@ -272,8 +282,10 @@ static plan *mkcldw(const ct_solver *ego_,
      A(mstart >= 0 && mstart + mcount <= m);
      if (!applicable(ego,
 		     r, irs, ors, m, ms, v, ivs, ovs, mstart, mstart + mcount,
-		     rio, iio, plnr, &extra_iter))
+		     rio, iio, plnr, &extra_iter)) {
+            fprintf(stderr, "[fftw][dftw-direct/mkcldw] not applicable!!!!\n");
           return (plan *)0;
+     }
 
      if (ego->bufferedp) {
 	  pln = MKPLAN_DFTW(P, &padt, apply_buf);
