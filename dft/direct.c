@@ -191,7 +191,22 @@ static int applicable(const solver *ego_, const problem *p_,
      INT vl;
      INT ivs, ovs;
 
-     fprintf(stderr, "[fftw][dft/direct/applicable] sz->rnk= %d vecsz->rnk= %d sz->dims[0].n= %ld ? %ld\n", p->sz->rnk, p->vecsz->rnk, p->sz->dims[0].n, d->sz);
+    fprintf(stderr, "[fftw][dft/direct/applicable] starting...\n");
+    int okp3 = X(tensor_tornk1)(p->vecsz, &vl, &ivs, &ovs);
+    int okp0 = d->genus->okp(d, p->ri, p->ii, p->ro, p->io,
+			      p->sz->dims[0].is, p->sz->dims[0].os,
+			      vl, ivs, ovs, plnr);
+    int okp1 = d->genus->okp(d, p->ri, p->ii, p->ro, p->io,
+			       p->sz->dims[0].is, p->sz->dims[0].os,
+			       vl - 1, ivs, ovs, plnr);
+    int okp2 = d->genus->okp(d, p->ri, p->ii, p->ro, p->io,
+			       p->sz->dims[0].is, p->sz->dims[0].os,
+			       2, 0, 0, plnr);
+     int okp4 = X(tensor_inplace_strides2)(p->sz, p->vecsz);
+     fprintf(stderr, "[fftw][dft/direct/applicable] sz->rnk= %d vecsz->rnk= %d sz->dims[0].n= %ld ? %ld okp0 %d okp1 %d okp2 %d okp3 %d vl= %ld ten_strides2= %d ri != ro %d\n", 
+             p->sz->rnk, p->vecsz->rnk, p->sz->dims[0].n, d->sz, okp0, okp1, okp2,
+             okp3, vl, okp4, p->ri != p->ro);
+
      return (
 	  1
 	  && p->sz->rnk == 1

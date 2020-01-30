@@ -103,6 +103,19 @@ static int n2f_okp(const kdft_desc *d,
 		   INT is, INT os, INT vl, INT ivs, INT ovs, 
 		   const planner *plnr)
 {
+    fprintf(stderr, "[dft/simd/common/genus.c] n2f_okp %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", 
+            ALIGNEDA(ri), ALIGNEDA(ro), !NO_SIMDP(plnr),
+            SIMD_STRIDE_OKA(is),
+            SIMD_VSTRIDE_OKA(ivs),
+            SIMD_VSTRIDE_OKA(os),
+            SIMD_STRIDE_OKPAIR(ovs),
+            ii == ri + 1,
+            io == ro + 1,
+            (vl % VL) == 0,
+            (!d->is || (d->is == is)),
+            (!d->os || (d->os == os)),
+            (!d->ivs || (d->ivs == ivs)),
+            (!d->ovs || (d->ovs == ovs)) );
      return (1
              && ALIGNEDA(ri)
              && ALIGNEDA(ro)

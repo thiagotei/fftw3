@@ -190,10 +190,19 @@ wgenbufinfo *X(mkcldw_wgenbuf_prol)(const ct_solver *ego_,
      wgbinf->mb = mstart;
      wgbinf->me = mstart + mcount;
 
+     fprintf(stderr, "[dftw-genericbuf/mkcldw_wgenbuf_prol] batchsz= %ld vecsz.n= %ld "
+             " ri != ro %d ten_strides2= %d\n", 
+             ego->batchsz, 
+             ((problem_dft *) wgbinf->cld_prb)->vecsz->dims[0].n,
+             ((problem_dft *) wgbinf->cld_prb)->ri != 
+             ((problem_dft *) wgbinf->cld_prb)->ro,
+             X(tensor_inplace_strides2)(((problem_dft *) wgbinf->cld_prb)->sz, 
+                 ((problem_dft *) wgbinf->cld_prb)->vecsz));
+
     return (wgenbufinfo *) wgbinf;
 }
 
-plan *X(mkcldw_wgenbuf_epil)(const solver *ego_, plan *cld, wgenbufinfo *wgbinf)
+plan *X(mkcldw_wgenbuf_epil)(const ct_solver *ego_, plan *cld, wgenbufinfo *wgbinf)
 {
      const S *ego = (const S *)ego_;
      P *pln;
@@ -295,6 +304,7 @@ static void regsolver(planner *plnr, INT r, INT batchsz)
 {
      S *slv = (S *)X(mksolver_ct)(sizeof(S), r, DECDIT, mkcldw, 0);
      slv->batchsz = batchsz;
+     //fprintf(stderr, "[dftw-genericbuf] registering r %ld batchsz %ld\n", r, batchsz);
      REGISTER_SOLVER(plnr, &(slv->super.super));
 
      if (X(mksolver_ct_hook)) {

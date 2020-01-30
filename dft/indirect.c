@@ -181,6 +181,62 @@ static int applicable(const solver *ego_, const problem *p_,
      return 1;
 }
 
+indinfo *X(alloc_indir_info)(void)
+{
+    indinfo * inf = (indinfo *) malloc(sizeof(indinfo));
+    if(!inf){fprintf(stderr, "Could not allocate indinf!\n"); exit(1);}
+    return inf;
+}
+
+void X(destroy_indir_info)(indinfo *inf)
+{
+    free(inf);
+}
+
+indinfo *X(mkplan_indir_prol)(const solver *ego_, const problem *p_, planner *plnr)
+{
+     const problem_dft *p = (const problem_dft *) p_;
+     const S *ego = (const S *) ego_;
+
+     if (!applicable(ego_, p_, plnr))
+          return (indinfo *) 0;
+
+     indinfo *inf = X(alloc_indir_info)();
+     inf->cldcpy_prb = X(mkproblem_dft_d)(X(mktensor_0d)(),
+                     X(tensor_append)(p->vecsz, p->sz),
+                     p->ri, p->ii, p->ro, p->io);
+     inf->cld_prb = ego->adt->mkcld(p);
+
+     return inf;
+}
+
+plan *X(mkplan_indir_epil)(const solver *ego_, plan *cldcpy, plan *cld)
+{
+     const S *ego = (const S *) ego_;
+     P *pln;
+
+     static const plan_adt padt = {
+         X(dft_solve), awake, print, destroy
+     };
+
+     if (!cldcpy) goto nada;
+     if (!cld) goto nada;
+
+     pln = MKPLAN_DFT(P, &padt, ego->adt->apply);
+     pln->cld = cld;
+     pln->cldcpy = cldcpy;
+     pln->slv = ego;
+     X(ops_add)(&cld->ops, &cldcpy->ops, &pln->super.super.ops);
+
+     return &(pln->super.super);
+
+ nada:
+     X(plan_destroy_internal)(cld);
+     X(plan_destroy_internal)(cldcpy);
+     return (plan *)0;
+
+}
+
 static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 {
      const problem_dft *p = (const problem_dft *) p_;

@@ -84,6 +84,16 @@ static int applicable0(const ct_solver *ego, const problem *p_, planner *plnr)
      const problem_dft *p = (const problem_dft *) p_;
      INT r;
 
+/*     fprintf(stderr, "[dft/ct/applicable0] %d %d %d %d %d\n",
+             p->sz->rnk == 1,
+             p->vecsz->rnk <= 1,
+            (ego->dec == DECDIT ||
+		 p->ri == p->ro ||
+		 !NO_DESTROY_INPUTP(plnr)),
+((r = X(choose_radix)(ego->r, p->sz->dims[0].n)) > 1),
+ p->sz->dims[0].n > r
+             );
+*/
      return (1
 	     && p->sz->rnk == 1
 	     && p->vecsz->rnk <= 1
@@ -147,27 +157,87 @@ ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *
      n = d[0].n;
      r = X(choose_radix)(ego->r, n);
      m = n / r;
-     fprintf(stderr, "[mkplan_ctdit_prol] r= %ld m= %ld n= %ld p->vecsz->rnk= %d\n", r, m, n, p->vecsz->rnk);
+     fprintf(stderr, "[mkplan_ctdit_prol] r= %ld m= %ld n= %ld p->vecsz->rnk= %d "
+             "ten_strides2= %d\n", 
+             r, m, n, p->vecsz->rnk,
+             X(tensor_inplace_strides2)(p->sz, p->vecsz));
 
      X(tensor_tornk1)(p->vecsz, &v, &ivs, &ovs);
 
-    //Allocate ctditinfo
-    ctditinfo * cinf = X(alloc_ctdit_info)();
-    cinf->n = n;
-    cinf->r = r;
-    cinf->m = m;
-    cinf->v = v;
-    cinf->ivs = ivs;
-    cinf->ovs = ovs;
-    cinf->d = d;
-    cinf->p = p;
-    cinf->cld_prb = X(mkproblem_dft_d)(
+     //Allocate ctditinfo
+     ctditinfo * cinf = X(alloc_ctdit_info)();
+
+     switch (ego->dec) {
+         case DECDIT:
+             {
+                 cinf->cors = 0;
+                 cinf->covs = 0;
+                 cinf->cld_prb = X(mkproblem_dft_d)(
                          X(mktensor_1d)(m, r * d[0].is, d[0].os),
                          X(mktensor_2d)(r, d[0].is, m * d[0].os,
-                                        v, ivs, ovs),
+                             v, ivs, ovs),
                          p->ri, p->ii, p->ro, p->io);
 
+                 break;
+             }
+         case DECDIF:
+         case DECDIF+TRANSPOSE:
+             {
+                 INT cors, covs; /* cldw ors, ovs */
+                 if (ego->dec == DECDIF+TRANSPOSE) {
+                     cors = ivs;
+                     covs = m * d[0].is;
+                     /* ensure that we generate well-formed dftw subproblems */
+                     /* FIXME: too conservative */
+                     if (!(1
+                                 && r == v
+                                 && d[0].is == r * cors))
+                         goto nada3;
+
+                     /* FIXME: allow in-place only for now, like in
+                        fftw-3.[01] */
+                     if (!(1
+                                 && p->ri == p->ro
+                                 && d[0].is == r * d[0].os
+                                 && cors == d[0].os
+                                 && covs == ovs
+                          ))
+                         goto nada3;
+                 } else {
+                     cors = m * d[0].is;
+                     covs = ivs;
+                 }
+                 cinf->cors = cors;
+                 cinf->covs = covs;
+
+                 cinf->cld_prb = X(mkproblem_dft_d)(
+                         X(mktensor_1d)(m, d[0].is, r * d[0].os),
+                         X(mktensor_2d)(r, cors, d[0].os,
+                             v, covs, ovs),
+                         p->ri, p->ii, p->ro, p->io);
+
+                 break;
+             }
+         default: A(0);
+     }
+     cinf->n = n;
+     cinf->r = r;
+     cinf->m = m;
+     cinf->v = v;
+     cinf->ivs = ivs;
+     cinf->ovs = ovs;
+     cinf->d = d;
+     cinf->p = p;
+
+     fprintf(stderr, "[mkplan_ctdit_prol] 2) r= %ld m= %ld n= %ld p->vecsz->rnk= %d "
+             "ten_strides2= %d\n", 
+             r, m, n,((problem_dft *) cinf->cld_prb)->vecsz->rnk,
+             X(tensor_inplace_strides2)(((problem_dft *) cinf->cld_prb)->sz, ((problem_dft *) cinf->cld_prb)->vecsz));
+
      return (ctditinfo *) cinf;
+nada3:
+     X(destroy_ctdit_info)(cinf);
+     return (ctditinfo *) 0;
 }
 
 plan *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctditinfo *info)
@@ -181,19 +251,30 @@ plan *X(mkplan_ctdit_epil)(const solver *ego_, plan *inpcldw, plan *inpcld, ctdi
      };
 
      switch (ego->dec) {
-	 case DECDIT:
-	 {
-	      cldw = inpcldw;
-          if (!cldw) goto nada2;
+         case DECDIT:
+             {
+                 cldw = inpcldw;
+                 if (!cldw) goto nada2;
 
-	      cld = inpcld;
-	      if (!cld) goto nada2;
+                 cld = inpcld;
+                 if (!cld) goto nada2;
 
-	      pln = MKPLAN_DFT(P, &padt, apply_dit);
-	      break;
-	 }
-	 default: A(0);
+                 pln = MKPLAN_DFT(P, &padt, apply_dit);
+                 break;
+             }
+         case DECDIF:
+         case DECDIF+TRANSPOSE:
+             {
+                 cldw = inpcldw;
+                 if (!cldw) goto nada2;
 
+                 cld = inpcld;
+                 if (!cld) goto nada2;
+
+                 pln = MKPLAN_DFT(P, &padt, apply_dif);
+                 break;
+             }
+         default: A(0);
      }
 
      pln->cld = cld;

@@ -63,6 +63,7 @@ typedef struct {
      const problem_dft *p;
      const problem *cld_prb;
      INT n, r, m, v, ivs, ovs;
+     INT cors, covs;
      iodim *d;
 } ctditinfo;
 
@@ -86,7 +87,7 @@ wgenbufinfo *X(mkcldw_wgenbuf_prol)(const ct_solver *ego_,
                     INT mstart, INT mcount,
                     R *rio, R *iio,
                     planner *plnr);
-plan        *X(mkcldw_wgenbuf_epil)(const solver *ego_, plan *cld, wgenbufinfo *wgbinf);
+plan        *X(mkcldw_wgenbuf_epil)(const ct_solver *ego_, plan *cld, wgenbufinfo *wgbinf);
 /////
 
 #ifdef __cplusplus

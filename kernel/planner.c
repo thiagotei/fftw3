@@ -109,7 +109,7 @@ static void register_solver(planner *ego, solver *s)
 	  n->slv = s;
 	  n->reg_nam = ego->cur_reg_nam;
 	  n->reg_id = ego->cur_reg_id++;
-      //fprintf(stdout, "[kernel/planner/register_solver] %s %d\n", n->reg_nam, n->reg_id);
+      //fprintf(stderr, "[kernel/planner/register_solver] %s %d\n", n->reg_nam, n->reg_id);
 	  
 	  A(strlen(n->reg_nam) < MAXNAM);
 	  n->nam_hash = X(hash)(n->reg_nam);

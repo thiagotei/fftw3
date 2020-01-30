@@ -70,6 +70,16 @@ vrankinfo *X(alloc_vrank_info)(void);
 void       X(destroy_vrank_info)(vrankinfo* vrinf);
 vrankinfo *X(mkplan_vrankgeq1_prol)(const solver *ego_, const problem *p_, planner *plnr);
 plan      *X(mkplan_vrankgeq1_epil)(const solver *ego_, plan *cld, vrankinfo *info);
+
+typedef struct {
+    const problem *cldcpy_prb;  
+    const problem *cld_prb;
+} indinfo; 
+
+indinfo  *X(alloc_indir_info)(void);
+void      X(destroy_indir_info)(indinfo *inf);
+indinfo  *X(mkplan_indir_prol)(const solver *ego_, const problem *p_, planner *plnr);
+plan     *X(mkplan_indir_epil)(const solver *ego_, plan *cldcpy, plan *cld);
 /////
 
 /* various solvers */
