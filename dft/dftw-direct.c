@@ -164,7 +164,7 @@ static int applicable0(const S *ego,
 {
      const ct_desc *e = ego->desc;
      UNUSED(v);
-     int tmp0 = e->genus->okp(e, rio, iio, irs, ivs, m, mb, me, ms, plnr);
+     /*int tmp0 = e->genus->okp(e, rio, iio, irs, ivs, m, mb, me, ms, plnr);
 
      int tmp1 = e->genus->okp(e, rio, iio, irs, ivs,
 				 m, mb, me - 1, ms, plnr);
@@ -172,7 +172,7 @@ static int applicable0(const S *ego,
 				 m, me - 1, me + 1, ms, plnr);
 
      fprintf(stderr, "[fftw][dftw-direct/applicable0] applicable0!!!! %d %d %d\n", tmp0, tmp1, tmp2);
-
+    */
      return (
 	  1
 	  && r == e->radix

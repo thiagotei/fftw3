@@ -190,7 +190,7 @@ wgenbufinfo *X(mkcldw_wgenbuf_prol)(const ct_solver *ego_,
      wgbinf->mb = mstart;
      wgbinf->me = mstart + mcount;
 
-     fprintf(stderr, "[dftw-genericbuf/mkcldw_wgenbuf_prol] batchsz= %ld vecsz.n= %ld "
+     /*fprintf(stderr, "[dftw-genericbuf/mkcldw_wgenbuf_prol] batchsz= %ld vecsz.n= %ld "
              " ri != ro %d ten_strides2= %d\n", 
              ego->batchsz, 
              ((problem_dft *) wgbinf->cld_prb)->vecsz->dims[0].n,
@@ -198,7 +198,7 @@ wgenbufinfo *X(mkcldw_wgenbuf_prol)(const ct_solver *ego_,
              ((problem_dft *) wgbinf->cld_prb)->ro,
              X(tensor_inplace_strides2)(((problem_dft *) wgbinf->cld_prb)->sz, 
                  ((problem_dft *) wgbinf->cld_prb)->vecsz));
-
+    */
     return (wgenbufinfo *) wgbinf;
 }
 

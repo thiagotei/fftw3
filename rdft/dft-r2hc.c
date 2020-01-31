@@ -26,7 +26,7 @@
    to interleaved) real/imag complex data. */
 
 #include "rdft/rdft.h"
-#include "dft/dft.h"
+//#include "dft/dft.h"
 
 typedef struct {
      solver super;
@@ -119,6 +119,89 @@ static int applicable(const problem *p_, const planner *plnr)
 
 	  return !(NO_DFT_R2HCP(plnr));
      }
+}
+
+r2hcinfo *X(alloc_r2hc_info)(void)
+{
+    r2hcinfo * inf = (r2hcinfo *) malloc(sizeof(r2hcinfo));
+    if(!inf) {fprintf(stderr, "Could not allocate r2hcinfo\n"); exit(1);}
+    return inf;
+}
+
+void X(destroy_r2hc_info)(r2hcinfo * inf)
+{
+    free(inf);
+}
+
+r2hcinfo *X(mkplan_r2hc_prol)(const solver *ego_, const problem *p_, planner *plnr)
+{
+     const problem_dft *p;
+     INT ishift = 0, oshift = 0;
+
+     UNUSED(ego_);
+     if (!applicable(p_, plnr))
+          return (r2hcinfo *)0;
+
+     p = (const problem_dft *) p_;
+
+     r2hcinfo *inf = X(alloc_r2hc_info)();
+
+     {
+      tensor *ri_vec = X(mktensor_1d)(2, p->ii - p->ri, p->io - p->ro);
+      tensor *cld_vec = X(tensor_append)(ri_vec, p->vecsz);
+      int i;
+      for (i = 0; i < cld_vec->rnk; ++i) { /* make all istrides > 0 */
+           if (cld_vec->dims[i].is < 0) {
+            INT nm1 = cld_vec->dims[i].n - 1;
+            ishift -= nm1 * (cld_vec->dims[i].is *= -1);
+            oshift -= nm1 * (cld_vec->dims[i].os *= -1);
+           }
+      }
+      inf->cld_prb = X(mkproblem_rdft_1)(p->sz, cld_vec, 
+                            p->ri + ishift, 
+                            p->ro + oshift, R2HC);
+      inf->ri_vec = ri_vec;
+      inf->cld_vec = cld_vec;
+     }
+     inf->ishift = ishift;
+     inf->oshift = oshift;
+     inf->p = p;
+
+     return inf;
+}
+
+plan *X(mkplan_r2hc_epil)(const solver *ego_, plan *cld, r2hcinfo *inf)
+{
+     P *pln;
+
+     static const plan_adt padt = {
+      X(dft_solve), awake, print, destroy
+     };
+
+     X(tensor_destroy2)(inf->ri_vec, inf->cld_vec);
+     if (!cld) return (plan *)0;
+
+     pln = MKPLAN_DFT(P, &padt, apply);
+
+     if (inf->p->sz->rnk == 0) {
+	  pln->n = 1;
+	  pln->os = 0;
+     }
+     else {
+	  pln->n = inf->p->sz->dims[0].n;
+	  pln->os = inf->p->sz->dims[0].os;
+     }
+     pln->ishift = inf->ishift;
+     pln->oshift = inf->oshift;
+
+     pln->cld = cld;
+
+     pln->super.super.ops = cld->ops;
+     pln->super.super.ops.other += 8 * ((pln->n - 1)/2);
+     pln->super.super.ops.add += 4 * ((pln->n - 1)/2);
+     pln->super.super.ops.other += 1; /* estimator hack for nop plans */
+
+     return &(pln->super.super);
 }
 
 static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)

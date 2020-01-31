@@ -229,11 +229,11 @@ ctditinfo *X(mkplan_ctdit_prol)(const solver *ego_, const problem *p_, planner *
      cinf->d = d;
      cinf->p = p;
 
-     fprintf(stderr, "[mkplan_ctdit_prol] 2) r= %ld m= %ld n= %ld p->vecsz->rnk= %d "
+     /*fprintf(stderr, "[mkplan_ctdit_prol] 2) r= %ld m= %ld n= %ld p->vecsz->rnk= %d "
              "ten_strides2= %d\n", 
              r, m, n,((problem_dft *) cinf->cld_prb)->vecsz->rnk,
              X(tensor_inplace_strides2)(((problem_dft *) cinf->cld_prb)->sz, ((problem_dft *) cinf->cld_prb)->vecsz));
-
+    */
      return (ctditinfo *) cinf;
 nada3:
      X(destroy_ctdit_info)(cinf);

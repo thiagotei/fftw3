@@ -23,6 +23,7 @@
 
 #include "kernel/ifftw.h"
 #include "rdft/codelet-rdft.h"
+#include "dft/dft.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -92,6 +93,20 @@ void X(dht_rader_register)(planner *p);
 void X(dft_r2hc_register)(planner *p);
 void X(rdft_nop_register)(planner *p);
 void X(hc2hc_generic_register)(planner *p);
+
+///// LOCUS new functions
+typedef struct {
+    const problem_dft *p;
+    const problem *cld_prb;
+    INT ishift, oshift;
+    tensor *ri_vec, *cld_vec;
+} r2hcinfo;
+
+r2hcinfo *X(alloc_r2hc_info)(void);
+void      X(destroy_r2hc_info)(r2hcinfo * inf);
+r2hcinfo *X(mkplan_r2hc_prol)(const solver *ego_, const problem *p_, planner *plnr);
+plan     *X(mkplan_r2hc_epil)(const solver *ego_, plan *cld, r2hcinfo *inf);
+/////////////////
 
 /****************************************************************************/
 /* problem2.c: */

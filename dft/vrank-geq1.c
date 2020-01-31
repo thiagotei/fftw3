@@ -167,7 +167,7 @@ vrankinfo *X(mkplan_vrankgeq1_prol)(const solver *ego_, const problem *p_, plann
 
      d = p->vecsz->dims + vdim;
 
-     fprintf(stderr, "[fftw][dft/vrank/mkplan_vrankgeq1_prol] sz->rnk= %d vecsz->rnk= %d ? %d sz->dims[0].n= %ld vl= %ld vecloop_dim= %d vdim= %d vecsz->dim[0].n= %ld "
+     /*fprintf(stderr, "[fftw][dft/vrank/mkplan_vrankgeq1_prol] sz->rnk= %d vecsz->rnk= %d ? %d sz->dims[0].n= %ld vl= %ld vecloop_dim= %d vdim= %d vecsz->dim[0].n= %ld "
              " ri != ro %d "
              "ten_strides2= %d\n",
              p->sz->rnk == 1, 
@@ -180,7 +180,7 @@ vrankinfo *X(mkplan_vrankgeq1_prol)(const solver *ego_, const problem *p_, plann
              p->vecsz->dims[0].n,
              p->ri != p->ro,
              X(tensor_inplace_strides2)(p->sz, p->vecsz));
-
+    */
      A(d->n > 1);
 
      //Allocate ctditinfo
@@ -242,7 +242,7 @@ static plan *mkplan(const solver *ego_, const problem *p_, planner *plnr)
 
      //fprintf(stderr, "[fftw][dft/vrank/mkplan] vecsz->rnk= %d ? %d sz->dims[0].n= %d\n", p->sz->rnk == 1, p->vecsz->rnk,p->vecsz->rnk <= 1, p->sz->dims[0].n == d->sz);
      d = p->vecsz->dims + vdim;
-     fprintf(stderr, "[fftw][dft/vrank/mkplan] sz->rnk= %d vecsz->rnk= %d ? %d sz->dims[0].n= %ld vl= %ld vecloop_dim= %d \n", p->sz->rnk == 1, p->vecsz->rnk,p->vecsz->rnk <= 1, p->sz->dims[0].n, d->n, ego->vecloop_dim);
+     //fprintf(stderr, "[fftw][dft/vrank/mkplan] sz->rnk= %d vecsz->rnk= %d ? %d sz->dims[0].n= %ld vl= %ld vecloop_dim= %d \n", p->sz->rnk == 1, p->vecsz->rnk,p->vecsz->rnk <= 1, p->sz->dims[0].n, d->n, ego->vecloop_dim);
 
      A(d->n > 1);
      cld = X(mkplan_d)(plnr,
